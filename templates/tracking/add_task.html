@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Додавання новго завдання</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="title">Заголовок: </label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="description">Опис: </label>
+    <textarea id="description" name="description" required></textarea>
+
+    <label for="start">Дата початку: </label>
+    <input type="date" id="start" name="start" required>
+
+    <label for="end">Дата завершення: </label>
+    <input type="date" id="end" name="end" required>
+
+    <label for="status">Стату: </label>
+    <input type="checkbox" id="status" name="status">
+
+    <label for="prioritet">Пріортет: </label>
+    <select id="prioritet" name="prioritet">
+        <option value="1">Низький</option>
+        <option value="2">Середній</option>
+        <option value="3">Високий</option>
+    </select>
+
+    <label for="permission">Доступ: </label>
+    <input type="checkbox" id="permission" name="permission">
+
+    <button type="submit">Додати завдання</button>
+</form>
+
+{% endblock %}

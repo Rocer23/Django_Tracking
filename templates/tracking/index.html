@@ -1,5 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Welcome to the Tracking of Tasks!</h1>
+<h1>Welcome to the Tracking of Tasks!</h1>
+<hr>
+<h2>Tasks</h2>
+
+
+<div class="container">
+  <div class="row">
+    
+    {% for task in tasks %}
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card h-100" style="width: 18rem;">
+      
+        <img src="https://pixabay.com/illustrations/woven-cloth-texture-dark-grey-352481" class="card-img-top" alt="...">
+        
+        <div class="card-body">
+          <h5 class="card-title">{{ task.title }}</h5>
+          <p class="card-text">{{ task.description }}</p>
+          <a href="{% url 'task-detail' task.id %}" class="btn btn-primary">View</a>
+        </div>
+      
+      </div>
+    </div>
+    
+    {% endfor %}
+  
+  </div>
+</div>
 {% endblock %}

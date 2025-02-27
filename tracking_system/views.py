@@ -8,7 +8,8 @@ from django.contrib.auth import login
 # Create your views here.
 
 def index(request):
-    return render(request, template_name='tracking/index.html', context=None)
+    tasks = Task.objects.all()
+    return render(request, template_name='tracking/index.html', context={'tasks': tasks})
 
 
 def register(request):
@@ -56,3 +57,13 @@ def add_task(request):
         return render(request, template_name='tracking/add_task.html')
     else:
         return redirect('login')
+
+
+def task_detail(request, pk):
+    task = Task.objects.get(pk=pk)
+    comments = Comments.objects.filter(task=task)
+    if request.method == 'POST':
+        comment = request.POST.get('comment')
+        Comments.objects.create(user=request.user, task=task, comment=comment)
+        return redirect('task-detail', pk=pk)
+    return render(request, template_name='tracking/task_detail.html', context={'task': task, 'comments': comments})

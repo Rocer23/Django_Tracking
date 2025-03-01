@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Welcome to the Tracking of Tasks!</h1>
 <hr>
-<h2>Tasks</h2>
+<h2>Your Tasks</h2>
 
 
 <div class="container">
@@ -28,4 +28,26 @@
   
   </div>
 </div>
+
+<hr></hr>
+<h2>Tasks Other Users</h2>
+<div class="container">
+  <div class="row">
+    {% for task in other_tasks %}
+    <div class="col-md-4 col-lg-2 mb-3">
+      <div class="card h-100" style="width: 18rem">
+        <img src="...." class="card-img-top" alt="...">
+        <div class="card-body">
+          <h5 class="card-title">{{ task.title }}</h5>
+          <p class="card-text">{{ task.description }}</p>
+          <a href="{% url 'task-detail' task.id %}" class="btn btn-primary">View</a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No other users' tasks found.</p>
+    {% endfor %}
+  </div>
+</div>
+
 {% endblock %}

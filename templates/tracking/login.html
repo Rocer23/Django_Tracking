@@ -5,7 +5,7 @@
 <form class="form-group" method="post">
     {% csrf_token %}
     {{ form.as_p}}
-    <button type="submit">Login</button>
-    <p>Don't have account? <a href="{% url 'register' %}"></a>Register</p>
+    <button type="submit" class="btn btn-primary">Login</button>
+    <p>Don't have account? <a href="{% url 'register' %}">Register</a></p>
 </form>
 {% endblock %}

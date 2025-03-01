@@ -1,15 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from tracking_system.models import Task, Comments
-from django.http import HttpResponse
+from .forms import CommentForm
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login
 
 
 # Create your views here.
 
 def index(request):
-    tasks = Task.objects.all()
-    return render(request, template_name='tracking/index.html', context={'tasks': tasks})
+    task = Task.objects.all()
+    other_task = Task.objects.all()
+    return render(request, template_name='tracking/index.html', context={'tasks': task, 'other_task': other_task})
 
 
 def register(request):
@@ -59,11 +61,69 @@ def add_task(request):
         return redirect('login')
 
 
-def task_detail(request, pk):
-    task = Task.objects.get(pk=pk)
+def task_detail(request, task_id):
+    task = Task.objects.get(id=task_id)
     comments = Comments.objects.filter(task=task)
     if request.method == 'POST':
         comment = request.POST.get('comment')
         Comments.objects.create(user=request.user, task=task, comment=comment)
-        return redirect('task-detail', pk=pk)
+        return redirect('task-detail', id=task_id)
     return render(request, template_name='tracking/task_detail.html', context={'task': task, 'comments': comments})
+
+
+def add_comment(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+
+    if request.method == "POST":
+        # print("POST дані:", request.POST)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.task = task
+            comment.user = request.user
+            comment.save()
+
+            return JsonResponse({
+                "user": request.user.username,
+                "text": comment.text,
+                "created_at": comment.created_at.strftime("%Y-%m_%d %H:%M")
+            })
+        # print("Помилка валідації форми:", form.errors)
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def like_comment(request, task_id, comment_id):
+    comment = get_object_or_404(Comments, id=comment_id)
+
+    if request.method == "POST":
+        comment.likes += 1
+        comment.save()
+        return JsonResponse({"likes": comment.likes, "dislikes": comment.dislikes})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def dislike_comment(request, task_id, comment_id):
+    comment = get_object_or_404(Comments, id=comment_id)
+
+    if request.method == "POST":
+        comment.dislikes += 1
+        comment.save()
+        return JsonResponse({"likes": comment.likes, "dislikes": comment.dislikes})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comments, id=comment_id)
+    if comment.user != request.user:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    comment.delete()
+
+    return JsonResponse({"message": "Comment deleted successfully"})
+
+
+def other_tasks(request, task_id):
+    other_task = Task.objects.exclude(user=request.user).exclude(id=task_id)
+    return render(request, template_name='tracking/task_detail.html', context={'other_tasks': other_task})
+

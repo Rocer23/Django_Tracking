@@ -19,6 +19,11 @@
                     <a class="nav-link" href="{% url 'task' %}">Tasks</a>
                     {% if  request.user.is_authenticated %}
                         <a class="nav-link" href="#"> {{user.username}} </a>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Logout</button>
+                        </form>
+                       
                     {% else %}
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     {% endif %}

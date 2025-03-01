@@ -23,10 +23,16 @@ class Task(models.Model):
 
 class Comments(models.Model):
     text = models.TextField()
-    likes = models.IntegerField()
-    dislikes = models.IntegerField()
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Comment"
+        verbose_name_plural = "Comments"
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f'{self.user.username} - {self.text}'
+        return f'{self.user.username} - {self.text[:50]}'

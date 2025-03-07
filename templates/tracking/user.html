@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static }
+
+{% block content %}
+<h1>User Account</h1>
+<!--Username-->
+<h2>Name: {{ user.username }}</h2>
+
+<!--Email-->
+<p>
+    Email: {{ user.email}}
+</p>
+
+<!--Date Joined-->
+<p>
+    Date Joined: {{ user.date_joined }}
+</p>
+
+<!--Profile Picture-->
+<img src="{{ user.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px;">
+
+{% endblock %}

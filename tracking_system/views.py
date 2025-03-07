@@ -1,9 +1,15 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
+from django.views import View
+
 from tracking_system.models import Task, Comments
 from .forms import CommentForm
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login
+
+from .mixin import OwnershipRequiredMixin
 
 
 # Create your views here.
@@ -25,6 +31,12 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, template_name='tracking/register.html', context={'form': form})
+
+
+# User
+def user(request):
+    user = User.objects.all()
+    return render(request, template_name='tracking/user.html', context={'user': user})
 
 
 def tasks(request):
@@ -127,3 +139,18 @@ def other_tasks(request, task_id):
     other_task = Task.objects.exclude(user=request.user).exclude(id=task_id)
     return render(request, template_name='tracking/task_detail.html', context={'other_tasks': other_task})
 
+
+class EditCommentView(LoginRequiredMixin, OwnershipRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        new_text = request.POST.get("text")
+        if new_text:
+            self.comment.text = new_text
+            self.comment.save()
+            return JsonResponse({"message": "Comment updated", "text": self.comment.text})
+        return JsonResponse({"error": "Text field cannot be empty"}, status=400)
+
+
+class DeleteCommentView(LoginRequiredMixin, OwnershipRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        self.comment.delete()
+        return JsonResponse({"Message": "Comment deleted"})

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
@@ -35,99 +36,22 @@
     {% for comment in task.comments.all %}
       <li>
         <strong>{{ comment.user.username }}</strong>: {{comment.text}} ({{ comment.created_at }})
-        <button class="like-btn" data-comment-id="{{ comment.id }}" data-task-id="{{ task.id }}">👍 <span id="like-count-{{ comment.id }}">{{ comment.likes }}</span></button>
-        <button class="dislike-btn" data-comment-id="{{ comment.id }}" data-task-id="{{ task.id }}">👎 <span id="dislike-count-{{ comment.id }}" >{{ comment.dislikes }}</span></button>
+
+        <br>
+        {% if request.user == comment.user %}
+        <button class="edit-btn btn btn-primary" data-task-id="{{ task.id }}" data-comment-id="{{ comment.id }}">
+            Edit
+        </button>
+        <button class="delete-btn btn btn-danger" data-task-id="{{ task.id }}" data-comment-id="{{ comment.id }}">
+            Delete
+        </button>
+        {% endif %}
+
+
+        <button class="like-btn" data-comment-id="{{ comment.id }}" data-task-id="{{ task.id }}">👍<span id="like-count-{{ comment.id }}">{{ comment.likes }}</span></button>
+        <button class="dislike-btn" data-comment-id="{{ comment.id }}" data-task-id="{{ task.id }}">👎<span id="dislike-count-{{ comment.id }}" >{{ comment.dislikes }}</span></button>
     </li>
     {% endfor %}
 </ul>
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("comment-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        let formData = new FormData(this);
-        fetch("{% url 'task-comment' task.id %}", {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-            } else {
-                let commentSection = document.getElementById("comment-list");
-                let newComment = document.createElement("li");
-                newComment.innerHTML = `<strong>${data.user}</strong>: ${data.text} <br><small>${data.created_at}</small>`;
-                commentSection.prepend(newComment);
-                document.getElementById("comment-form").reset();
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    });
-
-    document.querySelectorAll(".like-btn").forEach(button => {
-        button.addEventListener("click", async function () {
-            let commentId = this.getAttribute("data-comment-id");
-            let taskId = this.getAttribute("data-task-id");
-
-            let url = '/task/${taskId}/comment/${commentId}/like';
-
-            try {
-                let response = await fetch(url , {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token}}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({})
-                })
-
-                if (!response.ok) throw new Error("HTTP error! Status: ${response.status}");
-
-                let data = await response.json();
-                document.getElementById("like-count-${commentId}").innerHTML = data.likse;
-            
-            } catch (error) {
-                console.error("Fetch error:", error);
-            }
-        });
-    });
-    
-
-   document.querySelectorAll(".dislike-btn").forEach(button => {
-        button.addEventListener("click", async function () {
-            let commentId = this.getAttribute("data-comment-id");
-            let taskId = this.getAttribute("data-task-id");
-
-            let url = '/task/${taskId}/comment/${commentId}/dislike';
-
-            try {
-                let response = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRFToken": "{{ csrf_token }}",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({})
-                })
-
-                if (!response.ok) throw new Error("HTTP error! Status: $    {response.status}");
-
-                let data = await response.json();
-                document.getElementById("dislike-count-${commentId}").  innerHTML = data.dislikes;
-            
-            } catch (error) {
-                console.error("Fetch error:", error);
-            }
-        });
-   });
-
-});
-</script>
 
 {% endblock %}

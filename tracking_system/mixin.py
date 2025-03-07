@@ -1,19 +1,17 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DeleteView
-from django.urls import reverse_lazy
 from .models import Comments
 
 
-class CommentOwnershipMixin(LoginRequiredMixin):
+class OwnershipRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
-        comment = get_object_or_404(Comments, pk=self.kwargs['pk'])
-        if comment.user != request.user:
-            return JsonResponse({'error': "Ви не можете змінювати цей коментар"}, status=403)
+        comment_id = kwargs.get("comment_id")
+        task_id = kwargs.get("task_id")
+
+        comment = get_object_or_404(Comments, id=comment_id, task_id=task_id)
+
+        if request.user != comment.user:
+            return JsonResponse({'error': "You are not allowed to modify this comment"}, status=403)
+
+        self.comment = comment
         return super().dispatch(request, *args, **kwargs)
-
-
-class CommentDeleteView(CommentOwnershipMixin, DeleteView):
-    model = Comments
-    success_url = reverse_lazy('task-detail')
